@@ -1,6 +1,3 @@
 # Tasking
 
-## Card 17
-
-- 使用@vue/cli搭建脚手架
-- 更改模版输出为hello world
+见Trello：https://trello.com/b/gzkQjPF4/%E9%BB%91%E9%A9%AC%E8%AE%A1%E5%88%92-todolist

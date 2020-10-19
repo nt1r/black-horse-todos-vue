@@ -8,7 +8,10 @@
         <input
           class="todo-main-input"
           type="text"
-          placeholder="What needs to be done?" />
+          placeholder="What needs to be done?"
+          v-model=inputText
+          @keypress=onInputKeyPress
+        />
       </label>
     </main>
   </section>
@@ -19,6 +22,14 @@ import { Component, Vue } from 'vue-property-decorator';
 
 @Component
 export default class TodoList extends Vue {
+  inputText = '';
+
+  onInputKeyPress(event: KeyboardEvent) {
+    if (event.key === 'Enter' && this.inputText !== '') {
+      this.$store.commit('addNewTodo', this.inputText);
+      this.inputText = '';
+    }
+  }
 }
 </script>
 
