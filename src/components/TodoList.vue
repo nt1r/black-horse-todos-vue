@@ -13,11 +13,10 @@
           @keypress=onInputKeyPress
         />
       </label>
-      <ul class="main__ul" v-if="todos.length > 0">
-        <li class="main__ul__li" v-for="todo in todos" :key="todo.id">
+      <ul class="main__ul" v-if="this.$store.state.filteredTodos.length > 0">
+        <li class="main__ul__li" v-for="todo in this.$store.state.filteredTodos" :key="todo.id">
           <label class="main__ul__li__label">
             <input
-              id="checkbox"
               type="checkbox"
               :checked="todo.isCompleted"
               onchange=""
@@ -34,7 +33,7 @@
       </div>
       <div class="main__filter">
         <span class="main__filter__count">
-          {{ todos.length }} {{ todos.length > 1 ? "items" : "item" }} left
+          {{ this.$store.state.filteredTodos.length }} {{ this.$store.state.filteredTodos.length > 1 ? "items" : "item" }} left
         </span>
         <ul class="main__filter__ul">
           <li class="todo-main-filter-ul-li">
@@ -47,7 +46,7 @@
             <router-link class="main__filter__ul__li__link" to="/#/completed">Completed</router-link>
           </li>
         </ul>
-        <span class="main__filter__tail" v-if="isTodoListContainsCompleted()">Clear Completed</span>
+        <span class="main__filter__tail" v-if="this.$store.state.isCompletedTodoExists">Clear Completed</span>
       </div>
       <div class="main__fade--first"/>
       <div class="main__fade--second"/>
@@ -57,32 +56,28 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Todo from '@/models/Todo';
 import { ComponentOptions } from 'vue';
 
 @Component
 export default class TodoList extends Vue {
   inputText: string;
 
-  todos: Todo[];
-
   constructor(options: ComponentOptions<Vue>) {
     super(options);
     this.inputText = '';
-    this.todos = this.$store.state.todos;
   }
 
   onInputKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter' && this.inputText !== '') {
       this.$store.commit('addNewTodo', this.inputText);
+      this.$store.commit('updateFilteredTodos');
       this.inputText = '';
     }
   }
 
-  isTodoListContainsCompleted() {
-    const completedTodos: Todo[] = this.todos.filter((todo) => todo.isCompleted);
-    return completedTodos.length !== 0;
-  }
+  // onCheckboxChange(event: Event, id: number) {
+  //   console.log(this.todos[id - 1]);
+  // }
 }
 </script>
 
