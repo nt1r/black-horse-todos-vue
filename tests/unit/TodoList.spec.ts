@@ -105,4 +105,32 @@ describe('TodoList', () => {
 
     expect(store.state.manager.todos).toHaveLength(0);
   });
+
+  it('should change todo status', function () {
+    wrapper.vm.$store.commit({
+      type: 'addNewTodo',
+      content: 'cooking',
+    });
+    wrapper.vm.$store.commit({
+      type: 'setTodoStatus',
+      id: 1,
+      isCompleted: true,
+    });
+    wrapper.vm.$store.commit({
+      type: 'updateTodos',
+    });
+
+    expect(wrapper.vm.$store.state.todos[0].isCompleted).toBe(true);
+
+    wrapper.vm.$store.commit({
+      type: 'setTodoStatus',
+      id: 1,
+      isCompleted: false,
+    });
+    wrapper.vm.$store.commit({
+      type: 'updateTodos',
+    });
+
+    expect(wrapper.vm.$store.state.todos[0].isCompleted).toBe(false);
+  });
 })

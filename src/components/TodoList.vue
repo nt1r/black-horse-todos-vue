@@ -19,7 +19,7 @@
             <input
               type="checkbox"
               :checked="todo.isCompleted"
-              onchange=""
+              @change="onCheckboxChange($event, todo.id)"
             />
             <span class="main__ul__li__label__empty-span"/>
             <span class="main__ul__li__label__content--completed" v-if="todo.isCompleted">{{ todo.content }}</span>
@@ -69,15 +69,29 @@ export default class TodoList extends Vue {
 
   onInputKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter' && this.inputText !== '') {
-      this.$store.commit('addNewTodo', this.inputText);
-      this.$store.commit('updateFilteredTodos');
+      this.$store.commit({
+        type: 'addNewTodo',
+        content: this.inputText,
+      });
       this.inputText = '';
+      this.refreshPage();
     }
   }
 
-  // onCheckboxChange(event: Event, id: number) {
-  //   console.log(this.todos[id - 1]);
-  // }
+  onCheckboxChange(event: Event, id: number) {
+    this.$store.commit({
+      type: 'setTodoStatus',
+      id,
+      isCompleted: event.target.checked,
+    });
+    this.refreshPage();
+  }
+
+  refreshPage() {
+    this.$store.commit({
+      type: 'updateTodos',
+    });
+  }
 }
 </script>
 

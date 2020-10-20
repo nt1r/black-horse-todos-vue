@@ -16,26 +16,31 @@ export default new Vuex.Store<StoreInterface>({
     manager: new Manager(),
   },
   mutations: {
-    addNewTodo(state, content: string) {
-      state.manager.addNewTodo(content);
-
-      state.todos = Convertor.convertTodo2TodoVM(state.manager.todos);
+    addNewTodo(state, payload) {
+      state.manager.addNewTodo(payload.content);
     },
 
-    updateFilteredTodos(state) {
+    updateTodos(state) {
+      state.todos = Convertor.convertTodo2TodoVM(state.manager.todos);
+
       switch (state.filter) {
         case Filter.All:
         default:
-          state.filteredTodos = state.manager.todos;
+          state.filteredTodos = state.todos;
           break;
         case Filter.Completed:
-          state.filteredTodos = state.manager.todos.filter((todoVM) => todoVM.isCompleted);
+          state.filteredTodos = state.todos.filter((todoVM) => todoVM.isCompleted);
           break;
         case Filter.Active:
-          state.filteredTodos = state.manager.todos.filter((todoVM) => !todoVM.isCompleted);
+          state.filteredTodos = state.todos.filter((todoVM) => !todoVM.isCompleted);
           break;
       }
-      state.isCompletedTodoExists = state.manager.todos.filter((todoVM) => todoVM.isCompleted).length > 0;
+      state.isCompletedTodoExists = state.todos.filter((todoVM) => todoVM.isCompleted).length > 0;
+    },
+
+    setTodoStatus(state, payload) {
+      const { id, isCompleted } = payload;
+      state.manager.setTodoStatus(id, isCompleted);
     },
   },
   actions: {},

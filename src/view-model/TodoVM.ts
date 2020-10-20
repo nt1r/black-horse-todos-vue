@@ -5,10 +5,10 @@ class TodoVM {
 
   isCompleted: boolean;
 
-  constructor(id: number, content: string) {
+  constructor(id: number, content: string, isCompleted?: boolean) {
     this.id = id;
     this.content = content;
-    this.isCompleted = false;
+    this.isCompleted = isCompleted === undefined ? false : isCompleted;
   }
 }
 
