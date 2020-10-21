@@ -1,7 +1,7 @@
 import TodoLocalStorage from "../../src/models/TodoLocalStorage";
 import Todo from "../../src/models/Todo";
 
-describe('Manager', () => {
+describe('Local Storage', () => {
   beforeEach(() => {
     localStorage.clear();
   });

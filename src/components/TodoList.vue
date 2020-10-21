@@ -160,19 +160,16 @@ export default class TodoList extends Vue {
   }
 
   onClickDeleteButton(event: Event, id: number) {
-
-  }
-
-  onFilterChange(event: Event, hash: string) {
     this.$store.commit({
-      type: 'updateTodos',
+      type: 'deleteTodo',
+      id,
     });
-    console.log('aaa');
+    this.refreshPage();
   }
 
   refreshPage() {
     this.$store.commit({
-      type: 'updateTodos',
+      type: 'refreshTodos',
     });
   }
 }

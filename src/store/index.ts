@@ -17,7 +17,7 @@ export default new Vuex.Store<StoreInterface>({
       state.storage.create(payload.content);
     },
 
-    updateTodos(state) {
+    refreshTodos(state) {
       state.todos = Convertor.convertTodo2TodoVM(state.storage.getTodos());
     },
 
@@ -29,6 +29,11 @@ export default new Vuex.Store<StoreInterface>({
 
       state.todos = state.storage.getTodos();
     },
+
+    deleteTodo(state, payload) {
+      const { id } = payload;
+      state.storage.delete(id);
+    }
   },
   actions: {},
   modules: {},

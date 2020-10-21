@@ -1,5 +1,4 @@
 import store from '@/store/index';
-import { Filter } from '@/view-model/Filter';
 import { mocked } from 'ts-jest/utils';
 import Todo from '@/models/Todo';
 import TodoLocalStorage from "@/models/TodoLocalStorage";
@@ -43,7 +42,7 @@ describe('Store', () => {
       new Todo(3, 'swimming', false),
     ]);
 
-    store.commit('updateTodos');
+    store.commit('refreshTodos');
 
     expect(store.state.todos).toHaveLength(3);
     expect(store.state.todos[0].id).toBe(1);
@@ -64,7 +63,7 @@ describe('Store', () => {
       type: 'addNewTodo',
       content: 'cooking',
     });
-    store.commit('updateTodos');
+    store.commit('refreshTodos');
 
     expect(mockCreate).toHaveBeenCalledTimes(1);
     expect(mockCreate).toHaveBeenCalledWith('cooking');
@@ -84,7 +83,7 @@ describe('Store', () => {
       store.state.todos[0].isCompleted = true;
     })
 
-    store.commit('updateTodos');
+    store.commit('refreshTodos');
     expect(store.state.todos[0].isCompleted).toBe(false);
 
     store.commit({
@@ -92,10 +91,24 @@ describe('Store', () => {
       id: 1,
       isCompleted: true,
     });
-    store.commit('updateTodos');
+    store.commit('refreshTodos');
 
     expect(mockUpdate).toHaveBeenCalledTimes(1);
     expect(mockUpdate).toHaveBeenCalledWith(1, expect.anything());
     expect(store.state.todos[0].isCompleted).toBe(true);
+  });
+
+  it('should delete todo by id', function () {
+    const todoCooking: Todo = new Todo(1, 'cooking');
+    const todoRunning: Todo = new Todo(2, 'running');
+    initMockLocalStorage([todoCooking, todoRunning]);
+
+    store.commit({
+      type: 'deleteTodo',
+      id: 2,
+    });
+
+    expect(store.state.storage.delete).toHaveBeenCalledTimes(1);
+    expect(store.state.storage.delete).toHaveBeenCalledWith(2);
   });
 });

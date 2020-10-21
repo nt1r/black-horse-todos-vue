@@ -15,6 +15,7 @@ describe('TodoList', () => {
   beforeEach(() => {
     store.state.todos = [];
     store.state.storage = new TodoLocalStorage();
+    store.state.storage.generatedId = 1;
 
     localStorage.clear();
   });
@@ -46,7 +47,7 @@ describe('TodoList', () => {
       content: 'cooking',
     });
     store.commit({
-      type: 'updateTodos',
+      type: 'refreshTodos',
     });
     wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
 
@@ -61,7 +62,7 @@ describe('TodoList', () => {
       content: 'cooking',
     });
     store.commit({
-      type: 'updateTodos',
+      type: 'refreshTodos',
     });
     wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
 
@@ -80,7 +81,7 @@ describe('TodoList', () => {
       content: 'running',
     });
     store.commit({
-      type: 'updateTodos',
+      type: 'refreshTodos',
     });
     wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
 
@@ -134,7 +135,7 @@ describe('TodoList', () => {
       isCompleted: true,
     });
     store.commit({
-      type: 'updateTodos',
+      type: 'refreshTodos',
     });
 
     expect(store.state.todos[0].isCompleted).toBe(true);
@@ -145,9 +146,45 @@ describe('TodoList', () => {
       isCompleted: false,
     });
     store.commit({
-      type: 'updateTodos',
+      type: 'refreshTodos',
     });
 
     expect(store.state.todos[0].isCompleted).toBe(false);
+  });
+
+  it('should delete todo by id', function () {
+    store.commit({
+      type: 'addNewTodo',
+      content: 'cooking',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'running',
+    });
+    store.commit({
+      type: 'refreshTodos',
+    });
+
+    expect(store.state.todos.length).toBe(2);
+    expect(store.state.storage.getTodos().length).toBe(2);
+
+    store.commit({
+      type: 'deleteTodo',
+      id: 2,
+    });
+    store.commit({
+      type: 'refreshTodos',
+    });
+
+    expect(store.state.todos.length).toBe(1);
+    expect(store.state.storage.getTodos().length).toBe(1);
+
+    expect(store.state.todos[0].id).toBe(1);
+    expect(store.state.todos[0].content).toBe('cooking');
+    expect(store.state.todos[0].isCompleted).toBe(false);
+
+    expect(store.state.storage.getTodos()[0].id).toBe(1);
+    expect(store.state.storage.getTodos()[0].content).toBe('cooking');
+    expect(store.state.storage.getTodos()[0].isCompleted).toBe(false);
   });
 });
