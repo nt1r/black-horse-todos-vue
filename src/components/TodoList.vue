@@ -13,8 +13,8 @@
           @keypress=onInputKeyPress
         />
       </label>
-      <ul class="main__ul" v-if="this.$store.state.filteredTodos.length > 0">
-        <li class="main__ul__li" v-for="todo in this.$store.state.filteredTodos" :key="todo.id">
+      <ul class="main__ul" v-if="filteredTodos.length > 0">
+        <li class="main__ul__li" v-for="todo of filteredTodos" :key="todo.id">
           <label class="main__ul__li__label">
             <input
               type="checkbox"
@@ -25,7 +25,7 @@
             <span class="main__ul__li__label__content--completed" v-if="todo.isCompleted">{{ todo.content }}</span>
             <span class="main__ul__li__label__content--uncompleted" v-else>{{ todo.content }}</span>
           </label>
-          <button class="main__ul__li__label__delete-button" type="button"></button>
+          <button class="main__ul__li__label__delete-button" type="button" @click="onClickDeleteButton($event, todo.id)"></button>
         </li>
       </ul>
       <div class="main__no-content" v-else>
@@ -33,20 +33,32 @@
       </div>
       <div class="main__filter">
         <span class="main__filter__count">
-          {{ this.$store.state.filteredTodos.length }} {{ this.$store.state.filteredTodos.length > 1 ? "items" : "item" }} left
+          {{ filteredTodos.length }} {{ filteredTodos.length > 1 ? "items" : "item" }} left
         </span>
         <ul class="main__filter__ul">
           <li class="todo-main-filter-ul-li">
-            <router-link class="main__filter__ul__li__link" to="/#/">All</router-link>
+            <router-link
+              :class="filterStr === 'all' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
+              to="/#/">
+              All
+            </router-link>
           </li>
           <li class="todo-main-filter-ul-li">
-            <router-link class="main__filter__ul__li__link" to="/#/active">Active</router-link>
+            <router-link
+              :class="filterStr === 'active' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
+              to="/#/active">
+              Active
+            </router-link>
           </li>
           <li class="todo-main-filter-ul-li">
-            <router-link class="main__filter__ul__li__link" to="/#/completed">Completed</router-link>
+            <router-link
+              :class="filterStr === 'completed' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
+              to="/#/completed">
+              Completed
+            </router-link>
           </li>
         </ul>
-        <span class="main__filter__tail" v-if="this.$store.state.isCompletedTodoExists">Clear Completed</span>
+        <span class="main__filter__tail" v-if="isCompletedTodoExists">Clear Completed</span>
       </div>
       <div class="main__fade--first"/>
       <div class="main__fade--second"/>
@@ -57,6 +69,8 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { ComponentOptions } from 'vue';
+import TodoVM from '@/view-model/TodoVM';
+import { Filter } from '@/view-model/Filter';
 
 @Component
 export default class TodoList extends Vue {
@@ -65,6 +79,64 @@ export default class TodoList extends Vue {
   constructor(options: ComponentOptions<Vue>) {
     super(options);
     this.inputText = '';
+    this.refreshPage();
+  }
+
+  get filteredTodos(): TodoVM[] {
+    const currentFilter: Filter = this.filter;
+    switch (currentFilter) {
+      case Filter.All:
+      default:
+        return this.$store.state.todos;
+      case Filter.Completed:
+        return this.$store.state.todos.filter((todoVM) => todoVM.isCompleted);
+      case Filter.Active:
+        return this.$store.state.todos.filter((todoVM) => !todoVM.isCompleted);
+    }
+  }
+
+  get filter(): Filter {
+    const { hash } = this.$route;
+    switch (hash) {
+      case '':
+      case '#/':
+      default:
+        return Filter.All;
+
+      case '#/active':
+        return Filter.Active;
+
+      case '#/completed':
+        return Filter.Completed;
+    }
+  }
+
+  get filterStr(): string {
+    const { hash } = this.$route;
+    switch (hash) {
+      case '':
+      case '#/':
+      default:
+        return 'all';
+
+      case '#/active':
+        return 'active';
+
+      case '#/completed':
+        return 'completed';
+    }
+  }
+
+  get isCompletedTodoExists(): boolean {
+    let containCompleted = false;
+    this.$store.state.todos.some((todo) => {
+      if (todo.isCompleted) {
+        containCompleted = true;
+        return true;
+      }
+      return false;
+    });
+    return containCompleted;
   }
 
   onInputKeyPress(event: KeyboardEvent) {
@@ -85,6 +157,17 @@ export default class TodoList extends Vue {
       isCompleted: event.target.checked,
     });
     this.refreshPage();
+  }
+
+  onClickDeleteButton(event: Event, id: number) {
+
+  }
+
+  onFilterChange(event: Event, hash: string) {
+    this.$store.commit({
+      type: 'updateTodos',
+    });
+    console.log('aaa');
   }
 
   refreshPage() {
