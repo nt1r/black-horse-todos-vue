@@ -33,6 +33,7 @@ describe('Store', () => {
     store.state.todos = [];
 
     initMockLocalStorage([]);
+    mockGetTodos.mockClear();
   });
 
   it('should update todos from storage', () => {
@@ -110,5 +111,19 @@ describe('Store', () => {
 
     expect(store.state.storage.delete).toHaveBeenCalledTimes(1);
     expect(store.state.storage.delete).toHaveBeenCalledWith(2);
+  });
+
+  it('should delete all completed todos', function () {
+    const todoCooking: Todo = new Todo(1, 'cooking');
+    const todoRunning: Todo = new Todo(2, 'running', true);
+    initMockLocalStorage([todoCooking, todoRunning]);
+
+    store.commit({
+      type: 'deleteAllCompletedTodos',
+    });
+
+    expect(store.state.storage.getTodos).toHaveBeenCalledTimes(1);
+    expect(store.state.storage.setTodos).toHaveBeenCalledTimes(1);
+    expect(store.state.storage.setTodos).toHaveBeenCalledWith([todoCooking]);
   });
 });

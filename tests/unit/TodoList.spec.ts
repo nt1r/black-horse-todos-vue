@@ -187,4 +187,37 @@ describe('TodoList', () => {
     expect(store.state.storage.getTodos()[0].content).toBe('cooking');
     expect(store.state.storage.getTodos()[0].isCompleted).toBe(false);
   });
+
+  it('should delete all completed todos', function () {
+    store.commit({
+      type: 'addNewTodo',
+      content: 'cooking',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'running',
+    });
+    store.commit({
+      type: 'setTodoStatus',
+      id: 2,
+      isCompleted: true,
+    });
+    store.commit({
+      type: 'deleteAllCompletedTodos',
+    });
+    store.commit({
+      type: 'refreshTodos',
+    });
+
+    expect(store.state.todos.length).toBe(1);
+    expect(store.state.storage.getTodos().length).toBe(1);
+
+    expect(store.state.todos[0].id).toBe(1);
+    expect(store.state.todos[0].content).toBe('cooking');
+    expect(store.state.todos[0].isCompleted).toBe(false);
+
+    expect(store.state.storage.getTodos()[0].id).toBe(1);
+    expect(store.state.storage.getTodos()[0].content).toBe('cooking');
+    expect(store.state.storage.getTodos()[0].isCompleted).toBe(false);
+  });
 });

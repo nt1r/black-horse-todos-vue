@@ -58,7 +58,12 @@
             </router-link>
           </li>
         </ul>
-        <span class="main__filter__tail" v-if="isCompletedTodoExists">Clear Completed</span>
+        <span
+          class="main__filter__tail"
+          v-if="isCompletedTodoExists"
+          @click="onClickClearCompletedButton">
+          Clear Completed
+        </span>
       </div>
       <div class="main__fade--first"/>
       <div class="main__fade--second"/>
@@ -163,6 +168,13 @@ export default class TodoList extends Vue {
     this.$store.commit({
       type: 'deleteTodo',
       id,
+    });
+    this.refreshPage();
+  }
+
+  onClickClearCompletedButton() {
+    this.$store.commit({
+      type: 'deleteAllCompletedTodos',
     });
     this.refreshPage();
   }

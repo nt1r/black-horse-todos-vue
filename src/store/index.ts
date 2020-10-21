@@ -33,6 +33,11 @@ export default new Vuex.Store<StoreInterface>({
     deleteTodo(state, payload) {
       const { id } = payload;
       state.storage.delete(id);
+    },
+
+    deleteAllCompletedTodos(state) {
+      const activeTodos = state.storage.getTodos().filter((todo) => !todo.isCompleted);
+      state.storage.setTodos(activeTodos);
     }
   },
   actions: {},
