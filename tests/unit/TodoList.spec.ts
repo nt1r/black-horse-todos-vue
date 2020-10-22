@@ -199,7 +199,7 @@ describe('TodoList', () => {
     });
     store.commit({
       type: 'setTodoStatus',
-      id: 2,
+      id: 1,
       isCompleted: true,
     });
     store.commit({
@@ -212,12 +212,100 @@ describe('TodoList', () => {
     expect(store.state.todos.length).toBe(1);
     expect(store.state.storage.getTodos().length).toBe(1);
 
-    expect(store.state.todos[0].id).toBe(1);
-    expect(store.state.todos[0].content).toBe('cooking');
+    expect(store.state.todos[0].id).toBe(2);
+    expect(store.state.todos[0].content).toBe('running');
     expect(store.state.todos[0].isCompleted).toBe(false);
 
-    expect(store.state.storage.getTodos()[0].id).toBe(1);
-    expect(store.state.storage.getTodos()[0].content).toBe('cooking');
+    expect(store.state.storage.getTodos()[0].id).toBe(2);
+    expect(store.state.storage.getTodos()[0].content).toBe('running');
     expect(store.state.storage.getTodos()[0].isCompleted).toBe(false);
+  });
+
+  it('should render todos correctly when filter type is all', () => {
+    store.commit({
+      type: 'addNewTodo',
+      content: 'cooking',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'running',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'swimming',
+    });
+    store.commit({
+      type: 'setTodoStatus',
+      id: 1,
+      isCompleted: true,
+    });
+    store.commit({
+      type: 'refreshTodos',
+    });
+    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+
+    wrapper.find('#all-filter').trigger('click');
+
+    expect(wrapper.find('.main__filter__count').exists()).toBeTruthy();
+    expect(wrapper.find('.main__filter__count').text()).toBe('3 items left');
+    expect(wrapper.find('.main__filter__tail').exists()).toBeTruthy();
+  });
+
+  it('should render todos correctly when filter type is active', () => {
+    store.commit({
+      type: 'addNewTodo',
+      content: 'cooking',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'running',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'swimming',
+    });
+    store.commit({
+      type: 'setTodoStatus',
+      id: 1,
+      isCompleted: true,
+    });
+    store.commit({
+      type: 'refreshTodos',
+    });
+    router.push('/#/active');
+    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+
+    expect(wrapper.find('.main__filter__count').exists()).toBeTruthy();
+    expect(wrapper.find('.main__filter__count').text()).toBe('2 items left');
+    expect(wrapper.find('.main__filter__tail').exists()).toBeTruthy();
+  });
+
+  it('should render todos correctly when filter type is completed', function () {
+    store.commit({
+      type: 'addNewTodo',
+      content: 'cooking',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'running',
+    });
+    store.commit({
+      type: 'addNewTodo',
+      content: 'swimming',
+    });
+    store.commit({
+      type: 'setTodoStatus',
+      id: 1,
+      isCompleted: true,
+    });
+    store.commit({
+      type: 'refreshTodos',
+    });
+    router.push('/#/completed');
+    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+
+    expect(wrapper.find('.main__filter__count').exists()).toBeTruthy();
+    expect(wrapper.find('.main__filter__count').text()).toBe('1 item left');
+    expect(wrapper.find('.main__filter__tail').exists()).toBeTruthy();
   });
 });

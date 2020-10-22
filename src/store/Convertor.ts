@@ -1,5 +1,5 @@
 import Todo from '@/models/Todo';
-import TodoVM from '@/view-model/TodoVM';
+import TodoVM from '@/store/TodoVM';
 
 export default class Convertor {
   static convertTodo2TodoVM(todos: Todo[]) {

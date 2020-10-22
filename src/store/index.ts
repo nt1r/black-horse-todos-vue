@@ -1,8 +1,9 @@
 import Vue from 'vue';
 import Vuex from 'vuex';
-import TodoVM from '@/view-model/TodoVM';
-import Convertor from '@/view-model/Convertor';
+import TodoVM from '@/store/TodoVM';
+import Convertor from '@/store/Convertor';
 import TodoLocalStorage from "@/models/TodoLocalStorage";
+import Todo from "@/models/Todo";
 
 Vue.use(Vuex);
 
@@ -38,7 +39,12 @@ export default new Vuex.Store<StoreInterface>({
     deleteAllCompletedTodos(state) {
       const activeTodos = state.storage.getTodos().filter((todo) => !todo.isCompleted);
       state.storage.setTodos(activeTodos);
-    }
+    },
+
+    updateTodoContent(state, payload) {
+      const { id, content, isCompleted } = payload;
+      state.storage.update(id, new Todo(id, content, isCompleted));
+    },
   },
   actions: {},
   modules: {},

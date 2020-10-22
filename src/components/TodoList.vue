@@ -10,22 +10,41 @@
           type="text"
           placeholder="What needs to be done?"
           v-model=inputText
-          @keypress=onInputKeyPress
+          @keypress.enter=onInputKeyPress
         />
       </label>
       <ul class="main__ul" v-if="filteredTodos.length > 0">
         <li class="main__ul__li" v-for="todo of filteredTodos" :key="todo.id">
-          <label class="main__ul__li__label">
+          <label class="main__ul__li__label" v-if="editingId !== todo.id">
             <input
               type="checkbox"
               :checked="todo.isCompleted"
-              @change="onCheckboxChange($event, todo.id)"
+              @click="onCheckboxChange($event, todo.id)"
             />
             <span class="main__ul__li__label__empty-span"/>
-            <span class="main__ul__li__label__content--completed" v-if="todo.isCompleted">{{ todo.content }}</span>
-            <span class="main__ul__li__label__content--uncompleted" v-else>{{ todo.content }}</span>
+            <span
+              @dblclick="onDoubleClickTodoContent($event, todo.id, todo.content)"
+              :class="todo.isCompleted ? 'main__ul__li__label__content--completed': 'main__ul__li__label__content--uncompleted'">
+              {{ todo.content }}
+            </span>
           </label>
-          <button class="main__ul__li__label__delete-button" type="button" @click="onClickDeleteButton($event, todo.id)"></button>
+          <button
+            class="main__ul__li__label__delete-button"
+            type="button"
+            v-if="editingId !== todo.id"
+            @click="onClickDeleteButton($event, todo.id)"></button>
+          <label
+            class="main__ul__li__editor-label"
+            v-if="editingId === todo.id">
+            <input
+              class="main__ul__li__editor-input"
+              type="text"
+              @blur="onEditInputBlur"
+              @keypress.enter="onEnterEditor($event, todo.id, todo.isCompleted)"
+              v-model="editingText"
+              :ref="'editor-' + todo.id"
+              />
+          </label>
         </li>
       </ul>
       <div class="main__no-content" v-else>
@@ -38,6 +57,7 @@
         <ul class="main__filter__ul">
           <li class="todo-main-filter-ul-li">
             <router-link
+              id="all-filter"
               :class="filterStr === 'all' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
               to="/#/">
               All
@@ -45,6 +65,7 @@
           </li>
           <li class="todo-main-filter-ul-li">
             <router-link
+              id="active-filter"
               :class="filterStr === 'active' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
               to="/#/active">
               Active
@@ -52,6 +73,7 @@
           </li>
           <li class="todo-main-filter-ul-li">
             <router-link
+              id="completed-filter"
               :class="filterStr === 'completed' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
               to="/#/completed">
               Completed
@@ -74,16 +96,21 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
 import { ComponentOptions } from 'vue';
-import TodoVM from '@/view-model/TodoVM';
-import { Filter } from '@/view-model/Filter';
+import TodoVM from '@/store/TodoVM';
+import { Filter } from '@/store/Filter';
 
 @Component
 export default class TodoList extends Vue {
   inputText: string;
 
+  editingId: number;
+
+  editingText: string;
+
   constructor(options: ComponentOptions<Vue>) {
     super(options);
     this.inputText = '';
+    this.editingId = -1;
     this.refreshPage();
   }
 
@@ -144,8 +171,8 @@ export default class TodoList extends Vue {
     return containCompleted;
   }
 
-  onInputKeyPress(event: KeyboardEvent) {
-    if (event.key === 'Enter' && this.inputText !== '') {
+  onInputKeyPress() {
+    if (this.inputText === '') {
       this.$store.commit({
         type: 'addNewTodo',
         content: this.inputText,
@@ -177,6 +204,35 @@ export default class TodoList extends Vue {
       type: 'deleteAllCompletedTodos',
     });
     this.refreshPage();
+  }
+
+  onDoubleClickTodoContent(event: Event, id: number, content: string) {
+    this.editingId = id;
+    this.editingText = content;
+
+    // 异步更新
+    Vue.nextTick(() => {
+      this.$refs[`editor-${id}`][0].focus();
+    });
+  }
+
+  onEditInputBlur() {
+    this.editingId = -1;
+  }
+
+  onEnterEditor(event: Event, id: number, isCompleted: boolean) {
+    if (this.editingText !== '') {
+      this.$store.commit({
+        type: 'updateTodoContent',
+        id,
+        content: this.editingText,
+        isCompleted,
+      });
+      this.onEditInputBlur();
+      this.refreshPage();
+    } else {
+      this.onEditInputBlur();
+    }
   }
 
   refreshPage() {
@@ -259,7 +315,7 @@ $transition-duration: 0.1s;
 }
 
 /* Hide the browser's default checkbox */
-.main__ul__li input {
+.main__ul__li__label input {
   position: absolute;
   opacity: 0;
   cursor: pointer;
@@ -354,6 +410,23 @@ $transition-duration: 0.1s;
   color: lightgray;
 }
 
+.main__ul__li__editor-label {
+
+}
+
+.main__ul__li__editor-input {
+  width: 506px;
+  font-size: 24px;
+  font-family: inherit;
+  font-weight: inherit;
+  outline: 1px grey;
+  border: 1px solid grey;
+  color: inherit;
+  padding: 12px 20px;
+  margin: 0 0 0 43px;
+  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
 .main__no-content__placeholder {
   font-size: $todo-font-size;
   font-style: italic;
@@ -435,3 +508,18 @@ $transition-duration: 0.1s;
   width: $div-width * 0.96;
 }
 </style>
+
+// 拆分组件
+todo title
+todo adder
+todo list container
+todo item
+
+// single click and double click
+
+// view-model放到store文件夹
+
+// 变化：
+下周开始：Android
+
+明后天还有个Vue的小项目
