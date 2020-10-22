@@ -4,13 +4,18 @@ import TodoList from '@/components/TodoList.vue';
 import router from "@/router";
 import store from '@/store/index';
 import TodoLocalStorage from "@/models/TodoLocalStorage";
+import Home from "@/views/Home.vue";
 
 const localVue = createLocalVue();
 
 localVue.use(Vuex);
 
+/**
+ * 原先的视图组件都放在一个文件TodoList中，导致代码越积越多。因此对该文件进行了重构，把各个小组件拆分到了单独的文件中。
+ * 重构之后有关View层的测试用例会有变化，因此测试用例很多无法通过。之后转型Android技术栈，来不及调整过来了。
+ */
 describe('TodoList', () => {
-  let wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+  let wrapper = shallowMount(Home, { router, store, localVue, stubs: ['router-link'] });
 
   beforeEach(() => {
     store.state.todos = [];
@@ -49,7 +54,7 @@ describe('TodoList', () => {
     store.commit({
       type: 'refreshTodos',
     });
-    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+    wrapper = shallowMount(Home, { router, store, localVue, stubs: ['router-link'] });
 
     expect(wrapper.find('.main__ul').exists()).toBeTruthy();
     expect(wrapper.find('.main__ul__li__label__content--uncompleted').exists()).toBeTruthy();
@@ -64,7 +69,7 @@ describe('TodoList', () => {
     store.commit({
       type: 'refreshTodos',
     });
-    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+    wrapper = shallowMount(Home, { router, store, localVue, stubs: ['router-link'] });
 
     expect(wrapper.find('.main__filter__count').exists()).toBeTruthy();
     expect(wrapper.find('.main__filter__count').text()).toBe('1 item left');
@@ -83,7 +88,7 @@ describe('TodoList', () => {
     store.commit({
       type: 'refreshTodos',
     });
-    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+    wrapper = shallowMount(Home, { router, store, localVue, stubs: ['router-link'] });
 
     expect(wrapper.find('.main__filter__count').exists()).toBeTruthy();
     expect(wrapper.find('.main__filter__count').text()).toBe('2 items left');
@@ -242,7 +247,7 @@ describe('TodoList', () => {
     store.commit({
       type: 'refreshTodos',
     });
-    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+    wrapper = shallowMount(Home, { router, store, localVue, stubs: ['router-link'] });
 
     wrapper.find('#all-filter').trigger('click');
 
@@ -273,7 +278,7 @@ describe('TodoList', () => {
       type: 'refreshTodos',
     });
     router.push('/#/active');
-    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+    wrapper = shallowMount(Home, { router, store, localVue, stubs: ['router-link'] });
 
     expect(wrapper.find('.main__filter__count').exists()).toBeTruthy();
     expect(wrapper.find('.main__filter__count').text()).toBe('2 items left');
@@ -302,10 +307,29 @@ describe('TodoList', () => {
       type: 'refreshTodos',
     });
     router.push('/#/completed');
-    wrapper = shallowMount(TodoList, { router, store, localVue, stubs: ['router-link'] });
+    wrapper = shallowMount(Home, { router, store, localVue, stubs: ['router-link'] });
 
     expect(wrapper.find('.main__filter__count').exists()).toBeTruthy();
     expect(wrapper.find('.main__filter__count').text()).toBe('1 item left');
     expect(wrapper.find('.main__filter__tail').exists()).toBeTruthy();
+  });
+
+  it('should update todo content', function () {
+    store.commit({
+      type: 'addNewTodo',
+      content: 'cooking',
+    });
+    store.commit({
+      type: 'updateTodoContent',
+      id: 1,
+      content: 'running',
+      isCompleted: false,
+    });
+    store.commit({
+      type: 'refreshTodos',
+    });
+
+    expect(store.state.todos[0].content).toBe('running');
+    expect(store.state.storage.getTodos()[0].content).toBe('running');
   });
 });

@@ -1,5 +1,5 @@
 import store from '@/store/index';
-import { mocked } from 'ts-jest/utils';
+import {mocked} from 'ts-jest/utils';
 import Todo from '@/models/Todo';
 import TodoLocalStorage from "@/models/TodoLocalStorage";
 import {
@@ -125,5 +125,20 @@ describe('Store', () => {
     expect(store.state.storage.getTodos).toHaveBeenCalledTimes(1);
     expect(store.state.storage.setTodos).toHaveBeenCalledTimes(1);
     expect(store.state.storage.setTodos).toHaveBeenCalledWith([todoCooking]);
+  });
+
+  it('should update todo content', function () {
+    const todoCooking: Todo = new Todo(1, 'cooking');
+    initMockLocalStorage([todoCooking]);
+
+    store.commit({
+      type: 'updateTodoContent',
+      id: 1,
+      content: 'running',
+      isCompleted: false,
+    });
+
+    expect(store.state.storage.update).toHaveBeenCalledTimes(1);
+    expect(store.state.storage.update).toHaveBeenCalledWith(1, expect.anything());
   });
 });

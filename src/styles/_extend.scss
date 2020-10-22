@@ -1,0 +1,8 @@
+@use '../styles/_mixin';
+@use '../styles/_variable';
+
+.content-div-basic {
+  width: variable.$div-width;
+  background-color: white;
+  height: variable.$div-height;
+}

@@ -1,96 +1,43 @@
 <template>
-  <section>
-    <header>
-      <h1 class="logo-title">todos</h1>
-    </header>
-    <main class="main">
-      <label>
-        <input
-          class="main__input"
-          type="text"
-          placeholder="What needs to be done?"
-          v-model=inputText
-          @keypress.enter=onInputKeyPress
-        />
-      </label>
-      <ul class="main__ul" v-if="filteredTodos.length > 0">
-        <li class="main__ul__li" v-for="todo of filteredTodos" :key="todo.id">
-          <label class="main__ul__li__label" v-if="editingId !== todo.id">
-            <input
-              type="checkbox"
-              :checked="todo.isCompleted"
-              @click="onCheckboxChange($event, todo.id)"
-            />
-            <span class="main__ul__li__label__empty-span"/>
-            <span
-              @dblclick="onDoubleClickTodoContent($event, todo.id, todo.content)"
-              :class="todo.isCompleted ? 'main__ul__li__label__content--completed': 'main__ul__li__label__content--uncompleted'">
+  <div>
+    <ul class="main__ul" v-if="filteredTodos.length > 0">
+      <li class="main__ul__li" v-for="todo of filteredTodos" :key="todo.id">
+        <label class="main__ul__li__label" v-if="editingId !== todo.id">
+          <input
+            type="checkbox"
+            :checked="todo.isCompleted"
+            @click="onCheckboxChange($event, todo.id)"
+          />
+          <span class="main__ul__li__label__empty-span"/>
+          <span
+            @click.right="onRightClickTodoContent($event, todo.id, todo.content)"
+            :class="todo.isCompleted ? 'main__ul__li__label__content--completed': 'main__ul__li__label__content--uncompleted'">
               {{ todo.content }}
             </span>
-          </label>
-          <button
-            class="main__ul__li__label__delete-button"
-            type="button"
-            v-if="editingId !== todo.id"
-            @click="onClickDeleteButton($event, todo.id)"></button>
-          <label
-            class="main__ul__li__editor-label"
-            v-if="editingId === todo.id">
-            <input
-              class="main__ul__li__editor-input"
-              type="text"
-              @blur="onEditInputBlur"
-              @keypress.enter="onEnterEditor($event, todo.id, todo.isCompleted)"
-              v-model="editingText"
-              :ref="'editor-' + todo.id"
-              />
-          </label>
-        </li>
-      </ul>
-      <div class="main__no-content" v-else>
-        <span class="main__no-content__placeholder">No contents yet.</span>
-      </div>
-      <div class="main__filter">
-        <span class="main__filter__count">
-          {{ filteredTodos.length }} {{ filteredTodos.length > 1 ? "items" : "item" }} left
-        </span>
-        <ul class="main__filter__ul">
-          <li class="todo-main-filter-ul-li">
-            <router-link
-              id="all-filter"
-              :class="filterStr === 'all' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
-              to="/#/">
-              All
-            </router-link>
-          </li>
-          <li class="todo-main-filter-ul-li">
-            <router-link
-              id="active-filter"
-              :class="filterStr === 'active' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
-              to="/#/active">
-              Active
-            </router-link>
-          </li>
-          <li class="todo-main-filter-ul-li">
-            <router-link
-              id="completed-filter"
-              :class="filterStr === 'completed' ? 'main__filter__ul__li__link--selected' : 'main__filter__ul__li__link'"
-              to="/#/completed">
-              Completed
-            </router-link>
-          </li>
-        </ul>
-        <span
-          class="main__filter__tail"
-          v-if="isCompletedTodoExists"
-          @click="onClickClearCompletedButton">
-          Clear Completed
-        </span>
-      </div>
-      <div class="main__fade--first"/>
-      <div class="main__fade--second"/>
-    </main>
-  </section>
+        </label>
+        <button
+          class="main__ul__li__label__delete-button"
+          type="button"
+          v-if="editingId !== todo.id"
+          @click="onClickDeleteButton($event, todo.id)"></button>
+        <label
+          class="main__ul__li__editor-label"
+          v-if="editingId === todo.id">
+          <input
+            class="main__ul__li__editor-input"
+            type="text"
+            @blur="onEditInputBlur"
+            @keypress.enter="onEnterEditor($event, todo.id, todo.isCompleted)"
+            v-model="editingText"
+            :ref="'editor-' + todo.id"
+          />
+        </label>
+      </li>
+    </ul>
+    <div class="main__no-content" v-else>
+      <span class="main__no-content__placeholder">No contents yet.</span>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -101,16 +48,14 @@ import { Filter } from '@/store/Filter';
 
 @Component
 export default class TodoList extends Vue {
-  inputText: string;
-
   editingId: number;
 
   editingText: string;
 
   constructor(options: ComponentOptions<Vue>) {
     super(options);
-    this.inputText = '';
     this.editingId = -1;
+    this.editingText = '';
     this.refreshPage();
   }
 
@@ -121,9 +66,9 @@ export default class TodoList extends Vue {
       default:
         return this.$store.state.todos;
       case Filter.Completed:
-        return this.$store.state.todos.filter((todoVM) => todoVM.isCompleted);
+        return this.$store.state.todos.filter((todoVM: TodoVM) => todoVM.isCompleted);
       case Filter.Active:
-        return this.$store.state.todos.filter((todoVM) => !todoVM.isCompleted);
+        return this.$store.state.todos.filter((todoVM: TodoVM) => !todoVM.isCompleted);
     }
   }
 
@@ -140,45 +85,6 @@ export default class TodoList extends Vue {
 
       case '#/completed':
         return Filter.Completed;
-    }
-  }
-
-  get filterStr(): string {
-    const { hash } = this.$route;
-    switch (hash) {
-      case '':
-      case '#/':
-      default:
-        return 'all';
-
-      case '#/active':
-        return 'active';
-
-      case '#/completed':
-        return 'completed';
-    }
-  }
-
-  get isCompletedTodoExists(): boolean {
-    let containCompleted = false;
-    this.$store.state.todos.some((todo) => {
-      if (todo.isCompleted) {
-        containCompleted = true;
-        return true;
-      }
-      return false;
-    });
-    return containCompleted;
-  }
-
-  onInputKeyPress() {
-    if (this.inputText === '') {
-      this.$store.commit({
-        type: 'addNewTodo',
-        content: this.inputText,
-      });
-      this.inputText = '';
-      this.refreshPage();
     }
   }
 
@@ -199,14 +105,7 @@ export default class TodoList extends Vue {
     this.refreshPage();
   }
 
-  onClickClearCompletedButton() {
-    this.$store.commit({
-      type: 'deleteAllCompletedTodos',
-    });
-    this.refreshPage();
-  }
-
-  onDoubleClickTodoContent(event: Event, id: number, content: string) {
+  onRightClickTodoContent(event: Event, id: number, content: string) {
     this.editingId = id;
     this.editingText = content;
 
@@ -214,6 +113,7 @@ export default class TodoList extends Vue {
     Vue.nextTick(() => {
       this.$refs[`editor-${id}`][0].focus();
     });
+    event.preventDefault();
   }
 
   onEditInputBlur() {
@@ -248,50 +148,12 @@ export default class TodoList extends Vue {
 @use '../styles/_variable';
 @use "../styles/_mixin";
 
-$todo-width: 550px;
-$todo-font-size: 24px;
-
-$div-width: $todo-width + 7.6 * variable.$base-padding;
-$div-height: 60px;
-
 $icon-size: 20px;
 
 $checkbox-size: 24px;
 $check-color: #03fcc6;
 
 $transition-duration: 0.1s;
-
-.logo-title {
-  font-size: 100px;
-  font-family: inherit;
-  font-weight: inherit;
-  color: variable.$primary-color;
-  margin: variable.$base-margin;
-  text-align: center;
-}
-
-.main {
-  @include mixin.flex-layout(column, flex-start, center, flex-start);
-}
-
-.main__input {
-  padding: 1.6 * variable.$base-padding 1.6 * variable.$base-padding 1.6 * variable.$base-padding 6.2 * variable.$base-padding;
-  font-size: $todo-font-size;
-  font-family: inherit;
-  font-weight: inherit;
-  width: $todo-width;
-  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
-  border: none;
-}
-
-.main__input::placeholder {
-  color: lightgray;
-  font-style: italic;
-}
-
-.main__input:focus {
-  outline: none;
-}
 
 .main__ul {
   @include mixin.flex-layout(column, flex-start, flex-start, flex-start);
@@ -300,9 +162,9 @@ $transition-duration: 0.1s;
 }
 
 .content-div-basic {
-  width: $div-width;
+  width: variable.$div-width;
   background-color: white;
-  height: $div-height;
+  height: variable.$div-height;
 }
 
 .main__ul__li, .main__no-content {
@@ -327,7 +189,7 @@ $transition-duration: 0.1s;
   @include mixin.flex-layout(row, flex-start, center, center);
   padding: 0.5 * variable.$base-padding 0.5 * variable.$base-padding 0.5 * variable.$base-padding 1.5 * variable.$base-padding;
   width: 95%;
-  font-size: $todo-font-size;
+  font-size: variable.$todo-font-size;
 }
 
 .main__ul__li__label .main__ul__li__label__empty-span {
@@ -428,98 +290,10 @@ $transition-duration: 0.1s;
 }
 
 .main__no-content__placeholder {
-  font-size: $todo-font-size;
+  font-size: variable.$todo-font-size;
   font-style: italic;
   color: lightgray;
   text-align: center;
   width: 100%;
 }
-
-.main__filter {
-  @include mixin.flex-layout(row, center, center, flex-start);
-  @extend .content-div-basic;
-  position: relative;
-  font-size: 1em;
-  border: 1px solid variable.$background-color;
-  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
-}
-
-.main__filter__count {
-  margin-left: variable.$base-margin;
-  position: absolute;
-  left: 0;
-}
-
-.main__filter__ul {
-  display: block;
-  @include mixin.flex-layout(row, space-evenly, center, flex-start);
-  list-style-type: none;
-  width: 200px;
-  padding: 0;
-}
-
-.main__filter__ul__li__link {
-  background: transparent;
-  border: none;
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  font-size: 1em;
-  font-weight: 100;
-  padding: variable.$base-padding / 2;
-  text-decoration: none;
-  color: black;
-}
-
-.main__filter__ul__li__link--selected {
-  @extend .main__filter__ul__li__link;
-  outline: 2px solid variable.$primary-color;
-}
-
-.main__filter__ul__li__link:hover {
-  outline: 2px solid variable.$primary-color;
-  color: black;
-}
-
-.main__filter__tail {
-  margin-right: variable.$base-margin;
-  position: absolute;
-  right: 0;
-}
-
-.main__filter__tail:hover {
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.fade-basic {
-  background-color: white;
-  height: 5px;
-  box-shadow: 0 0 1px 1px rgba(0, 0, 0, 0.2);
-  border: 1px solid variable.$background-color;
-}
-
-.main__fade--first {
-  @extend .fade-basic;
-  width: $div-width * 0.98;
-}
-
-.main__fade--second {
-  @extend .fade-basic;
-  margin-top: 1px;
-  width: $div-width * 0.96;
-}
 </style>
-
-// 拆分组件
-todo title
-todo adder
-todo list container
-todo item
-
-// single click and double click
-
-// view-model放到store文件夹
-
-// 变化：
-下周开始：Android
-
-明后天还有个Vue的小项目

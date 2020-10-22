@@ -66,4 +66,17 @@ describe('Local Storage', () => {
     expect(storage.getTodos()[0].id).toBe(1);
     expect(storage.getTodos()[0].content).toBe('cooking');
   });
+
+  it('should update todo content', function () {
+    const storage = new TodoLocalStorage();
+    storage.create('cooking');
+    const targetTodo = storage.find(1);
+
+    expect(targetTodo.content).toBe('cooking');
+
+    targetTodo.content = 'running';
+    storage.update(1, targetTodo);
+
+    expect(targetTodo.content).toBe('running');
+  });
 });
